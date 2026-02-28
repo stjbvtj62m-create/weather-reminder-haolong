@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气提醒 | Weather Reminder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 40px;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .weather-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .city-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .city-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .city-name-en {
+            font-size: 1rem;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .weather-icon {
+            font-size: 3rem;
+        }
+
+        .current-temp {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .weather-desc {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-icon {
+            font-size: 1.5rem;
+        }
+
+        .detail-content {
+            flex: 1;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: #999;
+            margin-bottom: 3px;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        .update-time {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .refresh-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .refresh-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+        }
+
+        .error {
+            background: white;
+            color: #e74c3c;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            .weather-grid {
+                grid-template-columns: 1fr;
+            }
+            .current-temp {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌤️ 多城市天气播报</h1>
+            <p>Multi-City Weather Report</p>
+        </header>
+
+        <div id="weatherContainer">
+            <div class="loading">⏳ 正在加载天气数据... Loading weather data...</div>
+        </div>
+
+        <div class="footer">
+            <div class="update-time" id="updateTime">更新时间 Update time: --</div>
+            <br>
+            <button class="refresh-btn" onclick="loadWeather()">🔄 刷新数据 Refresh</button>
+            <p style="margin-top: 20px;">💡 数据来源 Data source: Open-Meteo API</p>
+            <p style="margin-top: 10px;">Made with ❤️ by huanghaolong001</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadWeather() {
+            const container = document.getElementById('weatherContainer');
+            container.innerHTML = '<div class="loading">⏳ 正在加载天气数据... Loading weather data...</div>';
+
+            try {
+                const response = await fetch('/api/weather');
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error || '获取数据失败');
+                }
+
+                const weatherData = result.data;
+                const timestamp = new Date(result.timestamp).toLocaleString('zh-CN', {
+                    timeZone: 'Asia/Shanghai',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+
+                document.getElementById('updateTime').textContent = `更新时间 Update time: ${timestamp}`;
+
+                let html = '<div class="weather-grid">';
+
+                weatherData.forEach(data => {
+                    html += `
+                        <div class="weather-card">
+                            <div class="city-header">
+                                <div>
+                                    <div class="city-name">${data.city}</div>
+                                    <div class="city-name-en">${data.cityEn}</div>
+                                </div>
+                                <div class="weather-icon">${data.current.weatherDesc.emoji}</div>
+                            </div>
+                            
+                            <div class="current-temp">${data.current.temperature}°C</div>
+                            <div class="weather-desc">${data.current.weatherDesc.zh} | ${data.current.weatherDesc.en}</div>
+                            
+                            <div class="weather-details">
+                                <div class="detail-item">
+                                    <div class="detail-icon">🌡️</div>
+                                    <div class="detail-content">
+                                        <div class="detail-label">体感温度 Feels Like</div>
+                                        <div class="detail-value">${data.current.feelsLike}°C</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <div class="detail-icon">💧</div>
+                                    <div class="detail-content">
+                                        <div class="detail-label">湿度 Humidity</div>
+                                        <div class="detail-value">${data.current.humidity}%</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <div class="detail-icon">🌬️</div>
+                                    <div class="detail-content">
+                                        <div class="detail-label">风速 Wind Speed</div>
+                                        <div class="detail-value">${data.current.windSpeed} km/h</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <div class="detail-icon">📊</div>
+                                    <div class="detail-content">
+                                        <div class="detail-label">今日范围 Today</div>
+                                        <div class="detail-value">${data.today.tempMin}~${data.today.tempMax}°C</div>
+                                    </div>
+                                </div>
+                                
+                                ${data.today.precipitation > 0 ? `
+                                <div class="detail-item" style="grid-column: 1 / -1;">
+                                    <div class="detail-icon">☔</div>
+                                    <div class="detail-content">
+                                        <div class="detail-label">今日降水 Precipitation</div>
+                                        <div class="detail-value">${data.today.precipitation} mm</div>
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading weather:', error);
+                container.innerHTML = `
+                    <div class="error">
+                        ❌ 加载失败 Loading failed: ${error.message}
+                        <br><br>
+                        <button class="refresh-btn" onclick="loadWeather()">重试 Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // 页面加载时自动获取数据
+        loadWeather();
+
+        // 每5分钟自动刷新
+        setInterval(loadWeather, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

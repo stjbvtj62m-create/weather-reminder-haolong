@@ -10,6 +10,8 @@ A lightweight multi-city weather reminder tool that automatically fetches and re
 
 ### ✨ Features
 - 🌍 **Multi-city support**: Pre-configured for Guangzhou, Shenzhen, and Chaozhou
+- 🌐 **Web Interface**: Beautiful responsive web UI with real-time data
+- 🔌 **REST API**: JSON endpoints for integration
 - ⏰ **Scheduled reminders**: Customizable cron-based scheduling
 - 🆓 **No API key required**: Uses free Open-Meteo API
 - 📊 **Comprehensive data**: Temperature, humidity, wind speed, precipitation
@@ -30,19 +32,23 @@ npm install
 
 ### 🚀 Usage
 
-#### Run with default schedule (8:00 AM daily)
+#### 🌐 Web Server (Recommended)
+Start the web server to access weather data via browser:
+```bash
+npm run server
+```
+Then open http://localhost:3000 in your browser.
+
+#### ⏰ Scheduled Task Mode
+Run with default schedule (8:00 AM daily):
 ```bash
 npm start
 ```
 
-#### Test immediately without waiting for scheduled time
+#### 🧪 Test Mode
+Test immediately without waiting for scheduled time:
 ```bash
 npm test
-```
-
-#### Development mode
-```bash
-npm run dev
 ```
 
 ### ⚙️ Configuration
@@ -121,9 +127,11 @@ To send notifications to external services (Slack, Discord, WeChat Work, etc.):
 
 ### 🛠️ Technology Stack
 - **Runtime**: Node.js 16+
+- **Web Framework**: Express.js
 - **Scheduler**: node-cron
 - **HTTP Client**: node-fetch
 - **API**: Open-Meteo (free, no registration required)
+- **Frontend**: Vanilla JavaScript + CSS3
 
 ### 📝 License
 MIT License - feel free to use and modify!
@@ -141,6 +149,8 @@ Issues and pull requests are welcome!
 
 ### ✨ 功能特性
 - 🌍 **多城市支持**：预配置广州、深圳、潮州
+- 🌐 **Web 界面**：漂亮的响应式网页界面，实时数据展示
+- 🔌 **REST API**：提供 JSON 接口便于集成
 - ⏰ **定时提醒**：基于 cron 表达式的可自定义调度
 - 🆓 **无需 API 密钥**：使用免费的 Open-Meteo API
 - 📊 **全面数据**：温度、湿度、风速、降水量
@@ -161,19 +171,23 @@ npm install
 
 ### 🚀 使用方法
 
-#### 按默认计划运行（每天早上 8 点）
+#### 🌐 Web 服务器模式（推荐）
+启动 Web 服务器，通过浏览器访问天气数据：
+```bash
+npm run server
+```
+然后在浏览器打开 http://localhost:3000
+
+#### ⏰ 定时任务模式
+按默认计划运行（每天早上 8 点）：
 ```bash
 npm start
 ```
 
-#### 立即测试（不等待定时）
+#### 🧪 测试模式
+立即测试（不等待定时）：
 ```bash
 npm test
-```
-
-#### 开发模式
-```bash
-npm run dev
 ```
 
 ### ⚙️ 配置说明
@@ -252,9 +266,11 @@ npm run dev
 
 ### 🛠️ 技术栈
 - **运行环境**：Node.js 16+
+- **Web 框架**：Express.js
 - **定时任务**：node-cron
 - **HTTP 客户端**：node-fetch
 - **天气 API**：Open-Meteo（免费，无需注册）
+- **前端**：原生 JavaScript + CSS3
 
 ### 📝 开源协议
 MIT License - 欢迎自由使用和修改！

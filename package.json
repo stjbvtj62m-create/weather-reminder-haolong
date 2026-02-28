@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node src/index.js",
-    "test": "node src/test.js"
+    "test": "node src/test.js",
+    "server": "node src/server.js"
   },
   "keywords": [
     "weather",
@@ -21,6 +22,8 @@
   "author": "huanghaolong001",
   "license": "MIT",
   "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2"
   },
