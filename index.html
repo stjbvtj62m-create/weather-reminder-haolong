@@ -3,154 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天气提醒系统 (Weather Reminder)</title>
+    <title>Haolong 的天气查询助手</title>
     <style>
         /* 页面基础样式 */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        h1 { text-align: center; color: #2c3e50; }
-        
-        /* 表单样式 */
-        .form-section { background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568; }
-        input[type="text"], input[type="email"], input[type="time"] { 
-            width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
         }
-        input:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2); }
-        button { background-color: #3182ce; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold;}
-        button:hover { background-color: #2b6cb0; }
+        .weather-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 { margin-top: 0; color: #2c3e50; font-size: 24px; }
         
-        /* 表格样式 */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: left; }
-        th { background-color: #edf2f7; color: #4a5568; }
-        tr:hover { background-color: #f7fafc; }
-        .delete-btn { background-color: #e53e3e; padding: 6px 12px; font-size: 14px; width: auto; color: white; border: none; border-radius: 4px; cursor: pointer;}
-        .delete-btn:hover { background-color: #c53030; }
-        .loading { text-align: center; color: #718096; font-style: italic; }
+        /* 搜索框样式 */
+        .search-box {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px 0 0 8px;
+            font-size: 16px;
+            outline: none;
+        }
+        .search-box input:focus { border-color: #4299e1; }
+        .search-box button {
+            padding: 12px 20px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .search-box button:hover { background-color: #3182ce; }
+
+        /* 天气展示区样式 */
+        #weather-result {
+            display: none; /* 默认隐藏，查询后显示 */
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .city-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .temperature { font-size: 48px; font-weight: bold; color: #2b6cb0; margin: 10px 0; }
+        .weather-desc { font-size: 20px; margin-bottom: 15px; }
+        .details { display: flex; justify-content: space-around; color: #4a5568; font-size: 14px; }
+        
+        /* 错误提示区 */
+        #error-msg {
+            color: #e53e3e;
+            margin-top: 15px;
+            display: none;
+        }
+        .loading {
+            color: #718096;
+            display: none;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🌤️ Haolong 的天气提醒控制台</h1>
+<div class="weather-card">
+    <h1>🌤️ 实时天气查询</h1>
     
-    <!-- 数据录入模块 -->
-    <div class="form-section">
-        <h3>➕ 添加新提醒</h3>
-        <form id="reminderForm">
-            <div class="form-group">
-                <label for="city">目标城市 (City)</label>
-                <input type="text" id="city" placeholder="例如：北京" required>
-            </div>
-            <div class="form-group">
-                <label for="email">接收邮箱 (Email)</label>
-                <input type="email" id="email" placeholder="例如：user@example.com" required>
-            </div>
-            <div class="form-group">
-                <label for="time">每日提醒时间 (Time)</label>
-                <input type="time" id="time" required>
-            </div>
-            <button type="submit">临时添加提醒</button>
-        </form>
+    <div class="search-box">
+        <input type="text" id="cityInput" placeholder="请输入城市名称 (如: 北京)" onkeypress="handleEnter(event)">
+        <button onclick="getWeather()">查询</button>
     </div>
 
-    <!-- 数据展示模块 -->
-    <h3>📋 已保存的提醒数据</h3>
-    <table id="dataTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>城市</th>
-                <th>接收邮箱</th>
-                <th>提醒时间</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td colspan="5" class="loading">正在加载数据中...</td></tr>
-        </tbody>
-    </table>
+    <div id="loading" class="loading">正在努力查询中... ⏳</div>
+    <div id="error-msg"></div>
+
+    <div id="weather-result">
+        <div class="city-name" id="cityName">--</div>
+        <div class="temperature"><span id="temp">--</span>°C</div>
+        <div class="weather-desc" id="weatherDesc">--</div>
+        <div class="details">
+            <div>💨 风速: <span id="windSpeed">--</span> km/h</div>
+            <div>⏱️ 数据更新: <span id="time">--</span></div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // 【1】声明一个空数组，准备接收外部数据
-    let reminders =[];
-    const tableBody = document.querySelector('#dataTable tbody');
-    const form = document.getElementById('reminderForm');
+    // 允许按回车键触发查询
+    function handleEnter(event) {
+        if (event.key === 'Enter') {
+            getWeather();
+        }
+    }
 
-    // 【2】渲染表格数据的函数
-    function renderTable() {
-        tableBody.innerHTML = ''; // 清空加载提示或旧数据
-        
-        if (reminders.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="loading">暂无数据</td></tr>';
+    // 将 WMO 天气代码转换为文字和 Emoji
+    function getWeatherDescription(code) {
+        const weatherCodes = {
+            0: "☀️ 晴朗",
+            1: "🌤️ 多云", 2: "⛅ 局部多云", 3: "☁️ 阴天",
+            45: "🌫️ 雾", 48: "🌫️ 结冰的雾",
+            51: "🌧️ 轻微毛毛雨", 53: "🌧️ 毛毛雨", 55: "🌧️ 密集毛毛雨",
+            61: "🌧️ 小雨", 63: "🌧️ 中雨", 65: "🌧️ 大雨",
+            71: "❄️ 小雪", 73: "❄️ 中雪", 75: "❄️ 大雪",
+            95: "⛈️ 雷暴", 96: "⛈️ 伴有轻微冰雹的雷暴", 99: "⛈️ 伴有严重冰雹的雷暴"
+        };
+        return weatherCodes[code] || "❓ 未知天气";
+    }
+
+    // 核心：查询天气功能
+    async function getWeather() {
+        const city = document.getElementById('cityInput').value.trim();
+        const resultDiv = document.getElementById('weather-result');
+        const errorDiv = document.getElementById('error-msg');
+        const loadingDiv = document.getElementById('loading');
+
+        if (!city) {
+            errorDiv.innerText = "⚠️ 请先输入城市名称！";
+            errorDiv.style.display = "block";
             return;
         }
 
-        reminders.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${item.id}</td>
-                <td>${item.city}</td>
-                <td>${item.email}</td>
-                <td>${item.time}</td>
-                <td><button class="delete-btn" onclick="deleteData(${item.id})">删除</button></td>
-            `;
-            tableBody.appendChild(row);
-        });
+        // 初始化 UI 状态
+        resultDiv.style.display = "none";
+        errorDiv.style.display = "none";
+        loadingDiv.style.display = "block";
+
+        try {
+            /* 
+             * 第一步：调用 Geocoding API 
+             * 因为天气接口需要经纬度，我们先根据用户输入的城市名查询其经纬度
+             */
+            const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=zh`);
+            const geoData = await geoResponse.json();
+
+            if (!geoData.results || geoData.results.length === 0) {
+                throw new Error("找不到该城市，请检查拼写是否正确。");
+            }
+
+            const location = geoData.results[0]; // 获取第一个匹配的城市结果
+            const lat = location.latitude;
+            const lon = location.longitude;
+            const displayName = `${location.name} ${location.country ? '('+location.country+')' : ''}`;
+
+            /* 
+             * 第二步：调用 Weather API 
+             * 利用刚刚获取的经纬度，查询当地的实时天气
+             */
+            const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`);
+            const weatherData = await weatherResponse.json();
+            const current = weatherData.current_weather;
+
+            // 第三步：将数据渲染到页面上
+            document.getElementById('cityName').innerText = displayName;
+            document.getElementById('temp').innerText = current.temperature;
+            document.getElementById('weatherDesc').innerText = getWeatherDescription(current.weathercode);
+            document.getElementById('windSpeed').innerText = current.windspeed;
+            
+            // 格式化时间显示
+            const updateTime = new Date(current.time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('time').innerText = updateTime;
+
+            // 隐藏加载，显示结果
+            loadingDiv.style.display = "none";
+            resultDiv.style.display = "block";
+
+        } catch (error) {
+            // 处理错误（网络错误或找不到城市）
+            loadingDiv.style.display = "none";
+            errorDiv.innerText = `❌ 查询失败: ${error.message}`;
+            errorDiv.style.display = "block";
+        }
     }
-
-    // 【3】核心：从 data.json 读取数据
-    // 这就实现了从静态文件“访问数据”的功能
-    function loadData() {
-        fetch('data.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('找不到 data.json 文件');
-                }
-                return response.json();
-            })
-            .then(data => {
-                reminders = data; // 将读取到的数据赋值给变量
-                renderTable();    // 渲染到页面上
-            })
-            .catch(error => {
-                console.error('获取数据失败:', error);
-                tableBody.innerHTML = `<tr><td colspan="5" class="loading" style="color: red;">数据加载失败，请确保同目录下存在 data.json</td></tr>`;
-            });
-    }
-
-    // 【4】处理表单提交（注：GitHub Pages 环境下只会在页面临时增加，刷新后消失）
-    form.addEventListener('submit', function(e) {
-        e.preventDefault(); 
-        
-        const city = document.getElementById('city').value;
-        const email = document.getElementById('email').value;
-        const time = document.getElementById('time').value;
-
-        const newData = {
-            id: reminders.length ? Math.max(...reminders.map(r => r.id)) + 1 : 1,
-            city: city,
-            email: email,
-            time: time
-        };
-
-        reminders.push(newData); 
-        renderTable();           
-        form.reset();            
-    });
-
-    // 【5】处理删除功能（同样只是页面临时删除）
-    function deleteData(id) {
-        reminders = reminders.filter(item => item.id !== id);
-        renderTable(); 
-    }
-
-    // 【6】页面加载时触发数据请求
-    loadData();
-
 </script>
 
 </body>
