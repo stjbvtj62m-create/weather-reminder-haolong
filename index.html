@@ -26,8 +26,9 @@
         th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: left; }
         th { background-color: #edf2f7; color: #4a5568; }
         tr:hover { background-color: #f7fafc; }
-        .delete-btn { background-color: #e53e3e; padding: 6px 12px; font-size: 14px; width: auto; }
+        .delete-btn { background-color: #e53e3e; padding: 6px 12px; font-size: 14px; width: auto; color: white; border: none; border-radius: 4px; cursor: pointer;}
         .delete-btn:hover { background-color: #c53030; }
+        .loading { text-align: center; color: #718096; font-style: italic; }
     </style>
 </head>
 <body>
@@ -51,7 +52,7 @@
                 <label for="time">每日提醒时间 (Time)</label>
                 <input type="time" id="time" required>
             </div>
-            <button type="submit">保存天气提醒</button>
+            <button type="submit">临时添加提醒</button>
         </form>
     </div>
 
@@ -68,24 +69,26 @@
             </tr>
         </thead>
         <tbody>
-            <!-- 数据将通过 JavaScript 动态填充到这里 -->
+            <tr><td colspan="5" class="loading">正在加载数据中...</td></tr>
         </tbody>
     </table>
 </div>
 
 <script>
-    // 【1】初始化的模拟数据 (当你有了后端后，这里可以初始化为空数组 [])
-    let reminders =[
-        { id: 1, city: '北京', email: 'haolong@example.com', time: '08:00' },
-        { id: 2, city: '上海', email: 'test@example.com', time: '07:30' }
-    ];
-
+    // 【1】声明一个空数组，准备接收外部数据
+    let reminders =[];
     const tableBody = document.querySelector('#dataTable tbody');
     const form = document.getElementById('reminderForm');
 
     // 【2】渲染表格数据的函数
     function renderTable() {
-        tableBody.innerHTML = ''; // 先清空表格内容
+        tableBody.innerHTML = ''; // 清空加载提示或旧数据
+        
+        if (reminders.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="loading">暂无数据</td></tr>';
+            return;
+        }
+
         reminders.forEach(item => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -99,69 +102,55 @@
         });
     }
 
-    // 【3】处理表单提交（增加数据）
+    // 【3】核心：从 data.json 读取数据
+    // 这就实现了从静态文件“访问数据”的功能
+    function loadData() {
+        fetch('data.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('找不到 data.json 文件');
+                }
+                return response.json();
+            })
+            .then(data => {
+                reminders = data; // 将读取到的数据赋值给变量
+                renderTable();    // 渲染到页面上
+            })
+            .catch(error => {
+                console.error('获取数据失败:', error);
+                tableBody.innerHTML = `<tr><td colspan="5" class="loading" style="color: red;">数据加载失败，请确保同目录下存在 data.json</td></tr>`;
+            });
+    }
+
+    // 【4】处理表单提交（注：GitHub Pages 环境下只会在页面临时增加，刷新后消失）
     form.addEventListener('submit', function(e) {
-        e.preventDefault(); // 阻止页面默认刷新行为
+        e.preventDefault(); 
         
-        // 获取输入框里的数据
         const city = document.getElementById('city').value;
         const email = document.getElementById('email').value;
         const time = document.getElementById('time').value;
 
-        // 生成新数据对象
         const newData = {
-            id: reminders.length ? Math.max(...reminders.map(r => r.id)) + 1 : 1, // 自动生成新ID
+            id: reminders.length ? Math.max(...reminders.map(r => r.id)) + 1 : 1,
             city: city,
             email: email,
             time: time
         };
 
-        /* 
-        ========================================================
-        如果你需要把数据传给你的 Github 项目后端（例如 Node.js/Python API），
-        请取消下面这行代码的注释，并修改为你的真实接口地址：
-        ========================================================
-        
-        fetch('http://localhost:8080/api/add-reminder', { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newData) 
-        }).then(response => response.json()).then(data => {
-            console.log("后端保存成功", data);
-        });
-        */
-
-        reminders.push(newData); // 本地数据更新
-        renderTable();           // 刷新界面表格
-        form.reset();            // 清空输入框
+        reminders.push(newData); 
+        renderTable();           
+        form.reset();            
     });
 
-    // 【4】处理删除功能
+    // 【5】处理删除功能（同样只是页面临时删除）
     function deleteData(id) {
-        /*
-        同样地，如果需要告诉你的后端删除这条数据：
-        fetch(`http://localhost:8080/api/delete-reminder/${id}`, { method: 'DELETE' });
-        */
-        
-        // 从数组中过滤掉被删除的 ID
         reminders = reminders.filter(item => item.id !== id);
-        renderTable(); // 刷新表格
+        renderTable(); 
     }
 
-    // 【5】页面加载时首先渲染一次数据
-    renderTable();
+    // 【6】页面加载时触发数据请求
+    loadData();
 
-    /* 
-    ========================================================
-    如果你有后端 API，页面加载时可以通过下面的代码从后端拉取数据：
-    ========================================================
-    fetch('http://localhost:8080/api/get-reminders')
-        .then(response => response.json())
-        .then(data => {
-            reminders = data; // 用后端获取的数据替换掉本地测试数据
-            renderTable();    // 重新渲染表格
-        });
-    */
 </script>
 
 </body>
