@@ -1,0 +1,36 @@
+{
+  "cities": [
+    {
+      "name": "广州",
+      "nameEn": "Guangzhou",
+      "lat": 23.1291,
+      "lon": 113.2644
+    },
+    {
+      "name": "深圳",
+      "nameEn": "Shenzhen",
+      "lat": 22.5431,
+      "lon": 114.0579
+    },
+    {
+      "name": "潮州",
+      "nameEn": "Chaozhou",
+      "lat": 23.6567,
+      "lon": 116.6228
+    }
+  ],
+  "schedule": {
+    "cron": "0 8 * * *",
+    "timezone": "Asia/Shanghai",
+    "description": "每天早上8点推送 (Run at 8:00 AM every day)"
+  },
+  "notification": {
+    "enabled": true,
+    "method": "console",
+    "webhook": ""
+  },
+  "weatherApi": {
+    "provider": "open-meteo",
+    "note": "使用免费的 Open-Meteo API，无需 API Key (Using free Open-Meteo API, no key required)"
+  }
+}

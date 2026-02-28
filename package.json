@@ -1,0 +1,30 @@
+{
+  "name": "weather-reminder-haolong",
+  "version": "1.0.0",
+  "description": "A multi-city weather reminder tool that sends daily weather updates for Guangzhou, Shenzhen, and Chaozhou | 多城市天气提醒工具，每日推送广州、深圳、潮州的天气信息",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "test": "node src/test.js"
+  },
+  "keywords": [
+    "weather",
+    "reminder",
+    "cron",
+    "china",
+    "guangzhou",
+    "shenzhen",
+    "chaozhou"
+  ],
+  "author": "huanghaolong001",
+  "license": "MIT",
+  "dependencies": {
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
