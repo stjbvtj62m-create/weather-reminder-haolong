@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气提醒系统 (Weather Reminder)</title>
+    <style>
+        /* 页面基础样式 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1 { text-align: center; color: #2c3e50; }
+        
+        /* 表单样式 */
+        .form-section { background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568; }
+        input[type="text"], input[type="email"], input[type="time"] { 
+            width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px;
+        }
+        input:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2); }
+        button { background-color: #3182ce; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold;}
+        button:hover { background-color: #2b6cb0; }
+        
+        /* 表格样式 */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        th { background-color: #edf2f7; color: #4a5568; }
+        tr:hover { background-color: #f7fafc; }
+        .delete-btn { background-color: #e53e3e; padding: 6px 12px; font-size: 14px; width: auto; }
+        .delete-btn:hover { background-color: #c53030; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌤️ Haolong 的天气提醒控制台</h1>
+    
+    <!-- 数据录入模块 -->
+    <div class="form-section">
+        <h3>➕ 添加新提醒</h3>
+        <form id="reminderForm">
+            <div class="form-group">
+                <label for="city">目标城市 (City)</label>
+                <input type="text" id="city" placeholder="例如：北京" required>
+            </div>
+            <div class="form-group">
+                <label for="email">接收邮箱 (Email)</label>
+                <input type="email" id="email" placeholder="例如：user@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="time">每日提醒时间 (Time)</label>
+                <input type="time" id="time" required>
+            </div>
+            <button type="submit">保存天气提醒</button>
+        </form>
+    </div>
+
+    <!-- 数据展示模块 -->
+    <h3>📋 已保存的提醒数据</h3>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>城市</th>
+                <th>接收邮箱</th>
+                <th>提醒时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 数据将通过 JavaScript 动态填充到这里 -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // 【1】初始化的模拟数据 (当你有了后端后，这里可以初始化为空数组 [])
+    let reminders =[
+        { id: 1, city: '北京', email: 'haolong@example.com', time: '08:00' },
+        { id: 2, city: '上海', email: 'test@example.com', time: '07:30' }
+    ];
+
+    const tableBody = document.querySelector('#dataTable tbody');
+    const form = document.getElementById('reminderForm');
+
+    // 【2】渲染表格数据的函数
+    function renderTable() {
+        tableBody.innerHTML = ''; // 先清空表格内容
+        reminders.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.id}</td>
+                <td>${item.city}</td>
+                <td>${item.email}</td>
+                <td>${item.time}</td>
+                <td><button class="delete-btn" onclick="deleteData(${item.id})">删除</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // 【3】处理表单提交（增加数据）
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // 阻止页面默认刷新行为
+        
+        // 获取输入框里的数据
+        const city = document.getElementById('city').value;
+        const email = document.getElementById('email').value;
+        const time = document.getElementById('time').value;
+
+        // 生成新数据对象
+        const newData = {
+            id: reminders.length ? Math.max(...reminders.map(r => r.id)) + 1 : 1, // 自动生成新ID
+            city: city,
+            email: email,
+            time: time
+        };
+
+        /* 
+        ========================================================
+        如果你需要把数据传给你的 Github 项目后端（例如 Node.js/Python API），
+        请取消下面这行代码的注释，并修改为你的真实接口地址：
+        ========================================================
+        
+        fetch('http://localhost:8080/api/add-reminder', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newData) 
+        }).then(response => response.json()).then(data => {
+            console.log("后端保存成功", data);
+        });
+        */
+
+        reminders.push(newData); // 本地数据更新
+        renderTable();           // 刷新界面表格
+        form.reset();            // 清空输入框
+    });
+
+    // 【4】处理删除功能
+    function deleteData(id) {
+        /*
+        同样地，如果需要告诉你的后端删除这条数据：
+        fetch(`http://localhost:8080/api/delete-reminder/${id}`, { method: 'DELETE' });
+        */
+        
+        // 从数组中过滤掉被删除的 ID
+        reminders = reminders.filter(item => item.id !== id);
+        renderTable(); // 刷新表格
+    }
+
+    // 【5】页面加载时首先渲染一次数据
+    renderTable();
+
+    /* 
+    ========================================================
+    如果你有后端 API，页面加载时可以通过下面的代码从后端拉取数据：
+    ========================================================
+    fetch('http://localhost:8080/api/get-reminders')
+        .then(response => response.json())
+        .then(data => {
+            reminders = data; // 用后端获取的数据替换掉本地测试数据
+            renderTable();    // 重新渲染表格
+        });
+    */
+</script>
+
+</body>
+</html>
